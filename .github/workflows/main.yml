@@ -19,6 +19,8 @@ jobs:
 
       - name: Create Branch
         uses: peterjgrainger/action-create-branch@v2.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           branch: bump
           
@@ -29,3 +31,4 @@ jobs:
         uses: repo-sync/pull-request@v2
         with:
           destination_branch: "master"
+          github_token: ${{ secrets.GITHUB_TOKEN }}

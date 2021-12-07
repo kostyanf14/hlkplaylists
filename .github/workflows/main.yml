@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-
       - name: Setup deps
         run: sudo apt-get -y install wget unzip
+
+      - uses: actions/checkout@v2
 
       - name: Create Branch
         uses: peterjgrainger/action-create-branch@v2.0.1
@@ -24,9 +24,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           branch: bump
-          
+
+      - uses: actions/checkout@v2
+        with:
+          ref: 'bump'
+
       - name: Update Playlists
         run: bash update.sh
+
+      - name: Add & Commit
+        uses: EndBug/add-and-commit@v7.5.0
+        with:
+          branch: 'bump'
+          message: 'Bump playlist'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Github Pull Request
         uses: repo-sync/pull-request@v2

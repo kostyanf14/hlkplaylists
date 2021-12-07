@@ -1,33 +1,38 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Update playlists
 
 on:
   push:
+    branches:
+      - test
   schedule:
-    # * is a special character in YAML so you have to quote this string
     - cron:  '2/7 * * * *'
 
 jobs:
-  bump:
+  update:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Setup deps
+      - name: Setup dependencies
         run: sudo apt-get -y install wget unzip
 
       - uses: actions/checkout@v2
+
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
 
       - name: Create Branch
         uses: peterjgrainger/action-create-branch@v2.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          branch: bump
+          branch: bump-${{ steps.date.outputs.date }}
 
       - uses: actions/checkout@v2
         with:
-          ref: 'bump'
+          ref: bump-${{ steps.date.outputs.date }}
 
       - name: Update Playlists
         run: bash update.sh
@@ -35,14 +40,14 @@ jobs:
       - name: Add & Commit
         uses: EndBug/add-and-commit@v7.5.0
         with:
-          branch: 'bump'
-          message: 'Bump playlist'
+          branch: bump-${{ steps.date.outputs.date }}
+          message: 'Update playlist (${{ steps.date.outputs.date }})'
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Github Pull Request
         uses: repo-sync/pull-request@v2
         with:
-          source_branch: "bump"
-          destination_branch: "master"
-          pr_title: "Pulling ${{ github.ref }} into master"
+          source_branch: bump-${{ steps.date.outputs.date }}
+          destination_branch: master
+          pr_title: 'Pulling ${{ github.ref }} into master'
           github_token: ${{ secrets.GITHUB_TOKEN }}
